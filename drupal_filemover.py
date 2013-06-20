@@ -71,8 +71,8 @@ def read_filenames(filename):
             yield os.path.basename(line.strip())
 
 def get_updatedb_line(tablename, fieldname, source, target, filename):
-    source = os.path.join(source, filename)
-    target = os.path.join(target, filename)
+    source = escape_sql_value(os.path.join(source, filename))
+    target = escape_sql_value(os.path.join(target, filename))
     tpl = "UPDATE `{tablename}` SET `{fieldname}` = REPLACE(`{fieldname}`, '{source}', '{target}');"
     
     sql1 = tpl.format(**locals())
@@ -87,6 +87,12 @@ def get_updatedb_line(tablename, fieldname, source, target, filename):
         return sql1 + '\n' + sql2
 
 def get_move_command(source, target, filename):
-    source = os.path.join(source, filename)
+    source = escape_filename(os.path.join(source, filename))
     tpl = "mv '{source}' '{target}'"
     return tpl.format(**locals())
+
+def escape_sql_value(value):
+    return value.replace("'", "\\'")
+
+def escape_filename(value):
+    return value.replace("'", """'"'"'""")
